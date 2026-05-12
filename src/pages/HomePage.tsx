@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ArticleCard } from '../components/ArticleCard'
+import { ArticlePagination } from '../components/ArticlePagination'
 import { FeedViewToggle, type FeedView } from '../components/FeedViewToggle'
 import type { Article } from '../types/article'
 import { isArticleBookmarked, toggleArticleBookmark } from '../utils/bookmarkList'
@@ -9,7 +10,11 @@ import {
 } from '../utils/bookmarkedArticlesStorage'
 import { usePageTitle } from '../hooks/usePageTitle'
 
-const ARTICLES_URL = 'https://dev.to/api/articles?per_page=30'
+const PER_PAGE = 20
+
+function articlesUrl(page: number) {
+  return `https://dev.to/api/articles?page=${page}&per_page=${PER_PAGE}`
+}
 
 function normalizeTags(tagList: unknown): string[] {
   if (Array.isArray(tagList)) {
@@ -29,23 +34,33 @@ export function HomePage() {
 
   const [articles, setArticles] = useState<Article[]>([])
   const [loading, setLoading] = useState(true)
+  const [pageLoading, setPageLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [feedView, setFeedView] = useState<FeedView>('all')
+  const [page, setPage] = useState(1)
   const [bookmarks, setBookmarks] = useState<Article[]>(loadBookmarkedArticles)
+
+  const initialFetchDone = useRef(false)
 
   useEffect(() => {
     saveBookmarkedArticles(bookmarks)
   }, [bookmarks])
 
   useEffect(() => {
+    if (feedView !== 'all') return
+
     const controller = new AbortController()
 
     async function loadArticles() {
-      setLoading(true)
+      if (initialFetchDone.current) {
+        setPageLoading(true)
+      } else {
+        setLoading(true)
+      }
       setError(null)
 
       try {
-        const response = await fetch(ARTICLES_URL, {
+        const response = await fetch(articlesUrl(page), {
           signal: controller.signal,
         })
 
@@ -68,6 +83,8 @@ export function HomePage() {
       } finally {
         if (!controller.signal.aborted) {
           setLoading(false)
+          setPageLoading(false)
+          initialFetchDone.current = true
         }
       }
     }
@@ -75,21 +92,39 @@ export function HomePage() {
     loadArticles()
 
     return () => controller.abort()
-  }, [])
+  }, [page, feedView])
+
+  function handleFeedViewChange(next: FeedView) {
+    setFeedView(next)
+    setPage(1)
+  }
 
   function handleToggleBookmark(article: Article) {
     setBookmarks((prev) => toggleArticleBookmark(prev, article))
   }
 
   const articlesToShow =
-    feedView === 'bookmarked' ? bookmarks : articles
+    feedView === 'bookmarked'
+      ? bookmarks.slice((page - 1) * PER_PAGE, page * PER_PAGE)
+      : articles
+
+  const hasNextPage =
+    feedView === 'all'
+      ? articles.length === PER_PAGE
+      : page * PER_PAGE < bookmarks.length
+
+  const hasPrevPage = page > 1
+
+  const showPaginationControls =
+    (feedView === 'all' && !error && (articles.length > 0 || page > 1)) ||
+    (feedView === 'bookmarked' && bookmarks.length > 0 && (hasPrevPage || hasNextPage))
 
   return (
     <section
       className={loading ? 'text-pretty' : 'space-y-6 text-pretty'}
       aria-labelledby={loading ? undefined : 'home-heading'}
       aria-label={loading ? 'Home' : undefined}
-      aria-busy={loading}
+      aria-busy={loading || pageLoading}
     >
       {loading ? (
         <div
@@ -117,7 +152,10 @@ export function HomePage() {
                 Latest articles from the DEV community.
               </p>
             </div>
-            <FeedViewToggle value={feedView} onChange={setFeedView} />
+            <FeedViewToggle
+              value={feedView}
+              onChange={handleFeedViewChange}
+            />
           </div>
 
           {error && (
@@ -131,7 +169,9 @@ export function HomePage() {
 
           {feedView === 'all' && !error && articles.length === 0 && (
             <p className="text-sm text-zinc-500 dark:text-zinc-400">
-              No articles to show.
+              {page === 1
+                ? 'No articles to show.'
+                : 'No more articles on this page.'}
             </p>
           )}
 
@@ -147,7 +187,21 @@ export function HomePage() {
             </div>
           )}
 
-          {articlesToShow.length > 0 && (
+          {pageLoading && (
+            <div
+              className="flex justify-center py-6"
+              role="status"
+              aria-live="polite"
+            >
+              <span className="sr-only">Loading page</span>
+              <div
+                className="h-9 w-9 animate-spin rounded-full border-2 border-zinc-200 border-t-violet-600 dark:border-zinc-600 dark:border-t-violet-400"
+                aria-hidden="true"
+              />
+            </div>
+          )}
+
+          {!pageLoading && articlesToShow.length > 0 && (
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
               {articlesToShow.map((article) => {
                 const authorName =
@@ -183,6 +237,17 @@ export function HomePage() {
                 )
               })}
             </div>
+          )}
+
+          {showPaginationControls && (
+            <ArticlePagination
+              page={page}
+              hasPrev={hasPrevPage}
+              hasNext={hasNextPage}
+              busy={pageLoading}
+              onPrev={() => setPage((p) => Math.max(1, p - 1))}
+              onNext={() => setPage((p) => p + 1)}
+            />
           )}
         </>
       )}
