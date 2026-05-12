@@ -1,73 +1,49 @@
-# React + TypeScript + Vite
+# Developer Feed
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A small frontend app that pulls the latest posts from DEV.to.
+You can bookmark Articles , save them in local storage, and display them in a separate view (Bookmarked Articles).
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Community feed** : Loads recent articles from the DEV.to public API with client-side pagination.
+- **Bookmarks** : Save articles to a list persisted in localStorage; switch between “All articles” and “Bookmarked” without losing state on refresh.
+- **Article cards** : Title, author, tags, reactions, reading time, and link out to the original post.
+- **Responsive layout** : Works from mobile through desktop; navigation adapts for smaller screens.
 
-## React Compiler
+## Tech stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+-React + TypeScript
+-Vite
+-Tailwind CSS
+-React Router
 
-## Expanding the ESLint configuration
+## Setup
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+git clone https://github.com/farhaahmed163/Rosella-Task.git
+cd Rosella-Task
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Open the URL Vite prints (usually `http://localhost:5173`).
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Live demo
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+**Production:** `<https://rosella-task.vercel.app/>`
+
+## Repository
+
+`https://github.com/farhaahmed163/Rosella-Task`
+
+## Assumptions
+
+The app depends on the DEV.to public API being available and allowing requests directly from the browser (no API key needed).
+
+Bookmarks are stored locally in the browser using localStorage, so there’s no account sync or backend involved.
+
+## Known issues
+
+API errors or limits: Sometimes the DEV.to API might be slow, down, or rate-limited, and in that case posts just won’t load properly.
+
+Bookmarks are device-based: Saved articles stay only in the browser. If you clear your data or switch devices, they’ll be gone.
