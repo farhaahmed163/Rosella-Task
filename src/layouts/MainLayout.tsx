@@ -19,7 +19,7 @@ export function MainLayout() {
   return (
     <div className="flex min-h-svh flex-1 flex-col">
       <header className="sticky top-0 z-30 border-b border-zinc-200/90 bg-white/90 backdrop-blur-md dark:border-zinc-800/90 dark:bg-zinc-950/90">
-        <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-3 px-4 py-3 sm:px-5 lg:max-w-5xl lg:px-6">
+        <div className="flex w-full items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
           <span className="truncate text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
             Developer Feed
           </span>
@@ -68,7 +68,7 @@ export function MainLayout() {
         menuId={menuId}
       />
 
-      <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6 sm:px-5 sm:py-8 lg:max-w-5xl lg:px-6 lg:py-10">
+      <main className="w-full flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
         <Outlet />
       </main>
     </div>

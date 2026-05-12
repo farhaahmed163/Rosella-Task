@@ -51,15 +51,6 @@ export function PrimaryNavLinks({
       >
         Home
       </NavLink>
-      <NavLink
-        to={ROUTES.bookmarks}
-        onClick={() => onItemClick?.()}
-        className={({ isActive }) =>
-          linkClassName({ isActive, orientation })
-        }
-      >
-        Bookmarks
-      </NavLink>
     </nav>
   )
 }
